@@ -1,24 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-  <!-- 1. Laad de Supabase-code in via een openbare CDN link -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Test</title>
+
+  <!-- 1. Laad de officiële Supabase bibliotheek in via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    #status {
+      font-style: italic;
+      color: #666;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      background: white;
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 <body>
-  <h1>Mijn Website</h1>
+
+  <h1>Mijn Producten uit Supabase</h1>
+  
+  <!-- Bericht dat verandert zodra de data binnen is -->
+  <p id="status">Gegevens ophalen uit de database...</p>
+
+  <!-- Hier worden de producten ingeladen -->
+  <ul id="producten-lijst"></ul>
 
   <script>
-    // 2. Maak verbinding met jouw Supabase project
-    const SUPABASE_URL = 'https://crmmhrhdbieflfnpxvpp.supabase.co'
-    const SUPABASE_KEY = 'sb_publishable_JrYstSzBRcUPcs-v3EjPkg_XE80WeF4'
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    // 2. Vul hier jouw eigen gegevens in uit het Supabase Dashboard:
+    // (Ga in Supabase naar: Project Settings -> API)
+    const SUPABASE_URL = 'HTTPS://crmmhrhdbieflfnpxvpp.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_JrYstSzBRcUPcs-v3EjPkg_XE80WeF4';
 
-    // 3. Nu kun je data ophalen of opslaan!
+    // 3. Maak de verbinding met Supabase
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 4. Functie om data op te halen en op het scherm te tonen
     async function haalDataOp() {
-      const { data, error } = await supabase.from('berichten').select('*')
-      console.log(data)
+      const statusEl = document.getElementById('status');
+      const lijstEl = document.getElementById('producten-lijst');
+
+      // Vraag data op uit de tabel 'producten'
+      const { data, error } = await supabase
+        .from('data') // Vang de naam van jouw tabel
+        .select('*');      // Haal alle kolommen op
+
+      // Foutafhandeling
+      if (error) {
+        console.error('Fout bij ophalen:', error);
+        statusEl.innerText = 'Er is een fout opgetreden: ' + error.message;
+        statusEl.style.color = 'red';
+        return;
+      }
+
+      // Als er geen data is gevonden
+      if (!data || data.length === 0) {
+        statusEl.innerText = 'Geen producten gevonden in de database.';
+        return;
+      }
+
+      // Verberg het statusbericht
+      statusEl.style.display = 'none';
+
+      // 5. Loop door alle opgehaalde producten en voeg ze toe aan de HTML
+      data.forEach(product => {
+        const li = document.createElement('li');
+        
+        // Pas 'naam' en 'prijs' aan naar de kolomnamen in jouw tabel
+        li.innerHTML = `<strong>${product.naam}</strong> — €${product.prijs}`;
+        
+        lijstEl.appendChild(li);
+      });
     }
-    haalDataOp()
+
+    // Roep de functie direct aan bij het laden van de pagina
+    haalDataOp();
   </script>
+
 </body>
 </html>
